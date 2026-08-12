@@ -1,0 +1,6 @@
+{
+  "name": "יוצר תסריטי יוטיוב עם AI",
+  "description": "כלי AI לשילוב תמלילי סרטוני יוטיוב, כתיבת תסריט מאוחד מחולק לפרקים וצ'אט חכם עם ג'ימני",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
