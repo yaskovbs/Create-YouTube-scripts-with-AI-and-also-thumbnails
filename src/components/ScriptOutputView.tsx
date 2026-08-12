@@ -44,6 +44,9 @@ import {
 import { FocusReadingModal } from './FocusReadingModal';
 import { createGoogleDocFromScript } from '../lib/googleDocsExport';
 import { ThumbnailPreviewCard } from './ThumbnailPreviewCard';
+import { VisualScriptEditor } from './VisualScriptEditor';
+import { ScriptMetricsDashboard } from './ScriptMetricsDashboard';
+import { ChapterSegment } from '../types';
 
 interface ScriptOutputViewProps {
   result: GeneratedResult;
@@ -69,11 +72,43 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
   onClearSavedScript,
   onSelectVersion,
 }) => {
-  const [activeTab, setActiveTab] = useState<'chapters' | 'full' | 'titles' | 'seo' | 'analytics'>('chapters');
+  const [activeTab, setActiveTab] = useState<'chapters' | 'visual_editor' | 'full' | 'titles' | 'seo' | 'analytics'>('chapters');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isFocusModalOpen, setIsFocusModalOpen] = useState(false);
   const [selectedTitleIndex, setSelectedTitleIndex] = useState<number>(0);
+
+  // Auto-Save Mechanism (Persists to localStorage every 30 seconds)
+  const [lastAutoSavedAt, setLastAutoSavedAt] = useState<Date>(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      try {
+        localStorage.setItem('yt_script_last_result', JSON.stringify(result));
+        setLastAutoSavedAt(new Date());
+      } catch (err) {
+        console.warn('Auto-save interval error:', err);
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [result]);
+
+  const handleUpdateChapters = (newChapters: ChapterSegment[]) => {
+    const updated = {
+      ...result,
+      chapters: newChapters,
+    };
+    if (onSelectVersion) {
+      onSelectVersion(updated);
+    }
+    try {
+      localStorage.setItem('yt_script_last_result', JSON.stringify(updated));
+      setLastAutoSavedAt(new Date());
+    } catch (err) {
+      console.warn('Manual save error:', err);
+    }
+  };
 
   // Google Docs Export State
   const [isExportingGDocs, setIsExportingGDocs] = useState(false);
@@ -462,9 +497,9 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
             <span className="text-xs text-slate-400">
               נוצר ב-{new Date(result.generatedAt).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
             </span>
-            <span className="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
-              <Bookmark className="w-3 h-3 text-emerald-400" />
-              שמור אוטומטית
+            <span className="text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>נשמר אוטומטית ({lastAutoSavedAt.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', second: '2-digit' })})</span>
             </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-white leading-tight">
@@ -680,6 +715,18 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
         </button>
 
         <button
+          onClick={() => setActiveTab('visual_editor')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
+            activeTab === 'visual_editor'
+              ? 'bg-cyan-500 text-slate-950 font-black shadow-md shadow-cyan-900/30'
+              : 'text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20'
+          }`}
+        >
+          <Sparkles className="w-4 h-4 text-amber-400" />
+          <span>עורך חזותי וסידור פרקים (Drag & Drop)</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('seo')}
           className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 ${
             activeTab === 'seo'
@@ -761,6 +808,14 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
       {/* Tab Content Body */}
       <div className="p-6">
         
+        {/* TAB VISUAL EDITOR */}
+        {activeTab === 'visual_editor' && (
+          <VisualScriptEditor
+            chapters={result.chapters}
+            onChangeChapters={handleUpdateChapters}
+          />
+        )}
+
         {/* TAB 1: CHAPTERS & TIMESTAMPS */}
         {activeTab === 'chapters' && (
           <div className="space-y-6">
@@ -986,6 +1041,9 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
         {activeTab === 'analytics' && (
           <div className="space-y-6">
             
+            {/* Script Metrics Dashboard */}
+            <ScriptMetricsDashboard result={result} />
+
             {/* Emotional Tone Area Chart */}
             <div className="bg-[#0a0c10] border border-[#1e293b] rounded-2xl p-6 space-y-4">
               <div className="flex items-center justify-between">

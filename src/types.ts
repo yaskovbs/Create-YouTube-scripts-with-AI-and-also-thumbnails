@@ -53,6 +53,8 @@ export interface ScriptChapter {
   speakerNote?: string;
 }
 
+export type ChapterSegment = ScriptChapter;
+
 export interface TitleOption {
   title: string;
   hookAngle: string;
