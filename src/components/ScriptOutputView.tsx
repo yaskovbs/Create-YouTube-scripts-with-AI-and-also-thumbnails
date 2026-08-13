@@ -130,6 +130,7 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
   // Google Docs Export State
   const [isExportingGDocs, setIsExportingGDocs] = useState(false);
   const [gdocsUrl, setGdocsUrl] = useState<string | null>(null);
+  const [gdocsIsCopied, setGdocsIsCopied] = useState<boolean>(false);
   const [gdocsError, setGdocsError] = useState<string | null>(null);
 
   // Versions Management State
@@ -192,10 +193,14 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
     setIsExportingGDocs(true);
     setGdocsError(null);
     setGdocsUrl(null);
+    setGdocsIsCopied(false);
 
     try {
-      const { docUrl } = await createGoogleDocFromScript(result);
-      setGdocsUrl(docUrl);
+      const res = await createGoogleDocFromScript(result);
+      setGdocsUrl(res.docUrl);
+      if (res.copiedToClipboard) {
+        setGdocsIsCopied(true);
+      }
     } catch (err: any) {
       console.error('Google Docs export failed:', err);
       setGdocsError(err.message || 'שגיאה בייצוא ל-Google Docs');
@@ -602,7 +607,11 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
         <div className="bg-emerald-500/10 border-b border-emerald-500/20 p-3 px-6 flex items-center justify-between gap-3 text-xs text-emerald-300">
           <div className="flex items-center gap-2">
             <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>מסמך התסריט נוצר בהצלחה בחשבון ה-Google Docs שלך!</span>
+            <span>
+              {gdocsIsCopied
+                ? 'התסריט הועתק ללוח ונפתח חלון Google Docs חדש! לחץ Ctrl+V ב-Google Docs להדבקה מיידית.'
+                : 'מסמך התסריט נוצר בהצלחה בחשבון ה-Google Docs שלך!'}
+            </span>
           </div>
           <a
             href={gdocsUrl}
@@ -610,7 +619,7 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
             rel="noopener noreferrer"
             className="px-3 py-1 bg-emerald-500 text-slate-950 hover:bg-emerald-400 font-bold rounded-lg transition flex items-center gap-1 shrink-0"
           >
-            <span>פתח ב-Google Docs</span>
+            <span>{gdocsIsCopied ? 'מעבר ל-Google Docs (Ctrl+V)' : 'פתח ב-Google Docs'}</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
         </div>
