@@ -394,6 +394,9 @@ ${v.transcript}
 
     const resultData = JSON.parse(responseText);
     resultData.generatedAt = new Date().toISOString();
+    if (options?.deadline) {
+      resultData.deadline = options.deadline;
+    }
 
     return res.json({ result: resultData });
   } catch (error: any) {

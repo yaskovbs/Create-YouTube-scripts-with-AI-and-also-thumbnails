@@ -28,6 +28,7 @@ export interface ScriptOptions {
   seriesMode?: boolean;
   customTargetWords?: number;
   customTargetMinutes?: number;
+  deadline?: string;
 }
 
 export interface SeoTag {
@@ -75,6 +76,7 @@ export interface GeneratedResult {
   emotionalCurve?: EmotionalPoint[];
   thumbnailPlaceholderUrl?: string;
   generatedAt: string;
+  deadline?: string;
 }
 
 export interface ScriptVersion {

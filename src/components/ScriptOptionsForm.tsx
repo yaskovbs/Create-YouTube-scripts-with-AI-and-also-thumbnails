@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sliders, Sparkles, Clock, Compass, Users, Globe, MessageSquareCode, Loader2, Bookmark, Layers, Film } from 'lucide-react';
+import { Sliders, Sparkles, Clock, Compass, Users, Globe, MessageSquareCode, Loader2, Bookmark, Layers, Film, Calendar } from 'lucide-react';
 import { ScriptOptions, TargetDuration, ScriptTone, ChapterControlMode, ChapterLengthRange } from '../types';
 
 interface ScriptOptionsFormProps {
@@ -390,6 +390,77 @@ export const ScriptOptionsForm: React.FC<ScriptOptionsFormProps> = ({
               <option value="Russian">רוסית (Russian)</option>
               <option value="Arabic">ערבית (Arabic)</option>
             </select>
+          </div>
+        </div>
+
+        {/* Publishing Deadline */}
+        <div>
+          <label className="text-xs font-bold text-slate-300 mb-1.5 flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-amber-400" />
+              <span>תאריך יעד לפרסום הסרטון ביוטיוב (Deadline - אופציונלי)</span>
+            </div>
+            {options.deadline && (
+              <button
+                type="button"
+                onClick={() => onChangeOptions({ deadline: undefined })}
+                className="text-[11px] text-rose-400 hover:text-rose-300 underline"
+              >
+                בטל תאריך יעד
+              </button>
+            )}
+          </label>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <input
+              type="datetime-local"
+              value={options.deadline || ''}
+              onChange={(e) => onChangeOptions({ deadline: e.target.value })}
+              className="bg-[#0a0c10] border border-[#1e293b] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 font-mono"
+            />
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  const d = new Date();
+                  d.setDate(d.getDate() + 1);
+                  d.setHours(18, 0, 0, 0);
+                  const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+                  const val = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T18:00`;
+                  onChangeOptions({ deadline: val });
+                }}
+                className="px-2.5 py-2 text-[11px] font-bold text-slate-300 bg-[#0a0c10] border border-[#1e293b] hover:border-amber-500 hover:text-white rounded-xl transition"
+              >
+                מחר ב-18:00
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const d = new Date();
+                  d.setDate(d.getDate() + 3);
+                  d.setHours(18, 0, 0, 0);
+                  const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+                  const val = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T18:00`;
+                  onChangeOptions({ deadline: val });
+                }}
+                className="px-2.5 py-2 text-[11px] font-bold text-slate-300 bg-[#0a0c10] border border-[#1e293b] hover:border-amber-500 hover:text-white rounded-xl transition"
+              >
+                בעוד 3 ימים
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const d = new Date();
+                  d.setDate(d.getDate() + 7);
+                  d.setHours(18, 0, 0, 0);
+                  const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+                  const val = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T18:00`;
+                  onChangeOptions({ deadline: val });
+                }}
+                className="px-2.5 py-2 text-[11px] font-bold text-slate-300 bg-[#0a0c10] border border-[#1e293b] hover:border-amber-500 hover:text-white rounded-xl transition"
+              >
+                בעוד שבוע
+              </button>
+            </div>
           </div>
         </div>
 

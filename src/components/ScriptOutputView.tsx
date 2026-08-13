@@ -46,6 +46,7 @@ import { createGoogleDocFromScript } from '../lib/googleDocsExport';
 import { ThumbnailPreviewCard } from './ThumbnailPreviewCard';
 import { VisualScriptEditor } from './VisualScriptEditor';
 import { ScriptMetricsDashboard } from './ScriptMetricsDashboard';
+import { ScriptDeadlineBanner } from './ScriptDeadlineBanner';
 import { ChapterSegment } from '../types';
 
 interface ScriptOutputViewProps {
@@ -107,6 +108,22 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
       setLastAutoSavedAt(new Date());
     } catch (err) {
       console.warn('Manual save error:', err);
+    }
+  };
+
+  const handleUpdateDeadline = (newDeadline: string | undefined) => {
+    const updated = {
+      ...result,
+      deadline: newDeadline,
+    };
+    if (onSelectVersion) {
+      onSelectVersion(updated);
+    }
+    try {
+      localStorage.setItem('yt_script_last_result', JSON.stringify(updated));
+      setLastAutoSavedAt(new Date());
+    } catch (err) {
+      console.warn('Manual save deadline error:', err);
     }
   };
 
@@ -659,6 +676,14 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
           <Plus className="w-3.5 h-3.5" />
           <span>שמור כגרסה חדשה להשוואה</span>
         </button>
+      </div>
+
+      {/* Publishing Deadline Banner */}
+      <div className="p-4 bg-[#0a0c10] border-b border-[#1e293b]">
+        <ScriptDeadlineBanner
+          deadline={result.deadline}
+          onUpdateDeadline={handleUpdateDeadline}
+        />
       </div>
 
       {/* Script Analytics Metric Bar */}
