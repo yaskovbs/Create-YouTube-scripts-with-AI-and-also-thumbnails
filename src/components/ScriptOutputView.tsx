@@ -47,6 +47,7 @@ import { ThumbnailPreviewCard } from './ThumbnailPreviewCard';
 import { VisualScriptEditor } from './VisualScriptEditor';
 import { ScriptMetricsDashboard } from './ScriptMetricsDashboard';
 import { ScriptDeadlineBanner } from './ScriptDeadlineBanner';
+import { exportMetricsToCsv } from '../lib/exportCsv';
 import { ChapterSegment } from '../types';
 
 interface ScriptOutputViewProps {
@@ -681,6 +682,15 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
           >
             <Printer className="w-3.5 h-3.5 text-rose-400" />
             <span>PDF</span>
+          </button>
+
+          <button
+            onClick={() => exportMetricsToCsv(result)}
+            className="px-3 py-2 text-xs font-semibold text-emerald-300 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/40 rounded-xl transition flex items-center gap-1.5 shadow-sm"
+            title="ייצא מדדים, סטטיסטיקות ומילת מפתח לקובץ Excel (CSV)"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+            <span>ייצא CSV (אקסל)</span>
           </button>
 
           {onClearSavedScript && (

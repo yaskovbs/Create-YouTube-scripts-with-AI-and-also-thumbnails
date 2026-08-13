@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { GeneratedResult } from '../types';
-import { Clock, BookOpen, Brain, Activity, BarChart2, Layers, CheckCircle, Sparkles, AlertTriangle } from 'lucide-react';
+import { Clock, BookOpen, Brain, Activity, BarChart2, Layers, CheckCircle, Sparkles, AlertTriangle, FileSpreadsheet, Download } from 'lucide-react';
+import { exportMetricsToCsv } from '../lib/exportCsv';
 
 interface ScriptMetricsDashboardProps {
   result: GeneratedResult;
@@ -63,12 +64,24 @@ export const ScriptMetricsDashboard: React.FC<ScriptMetricsDashboardProps> = ({ 
     <div className="bg-[#0a0c10] border border-[#1e293b] rounded-2xl p-6 space-y-6 dir-rtl text-right">
       
       {/* Title */}
-      <div className="flex items-center justify-between border-b border-[#1e293b] pb-4 flex-wrap gap-2">
+      <div className="flex items-center justify-between border-b border-[#1e293b] pb-4 flex-wrap gap-3">
         <h3 className="text-base font-bold text-white flex items-center gap-2">
           <Activity className="w-5 h-5 text-red-500" />
           <span>דשבורד מדדי תסריט (Script Analytics & Metrics Dashboard)</span>
         </h3>
-        <span className="text-xs text-slate-400">ניתוח לקסיקלי וקצב הקראה בזמן אמת</span>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => exportMetricsToCsv(result, wpmRate)}
+            className="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+            title="ייצא מדדים וסטטיסטיקות לקובץ CSV (מותאם לאקסל)"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+            <span>ייצא מדדים ל-Excel (CSV)</span>
+            <Download className="w-3.5 h-3.5 opacity-70" />
+          </button>
+          <span className="text-xs text-slate-400 hidden sm:inline">ניתוח לקסיקלי וקצב הקראה בזמן אמת</span>
+        </div>
       </div>
 
       {/* Primary 3 Metric Cards */}
