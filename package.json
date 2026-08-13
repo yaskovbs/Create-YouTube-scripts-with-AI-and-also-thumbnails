@@ -9,7 +9,10 @@
     "start": "node dist/server.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist server.cjs",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "build:cf": "vite build",
+    "cf:dev": "npm run build:cf && wrangler pages dev dist --compatibility-flag=nodejs_compat",
+    "cf:deploy": "npm run build:cf && wrangler pages deploy dist --project-name=youtube-ai-script-generator"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -32,6 +35,8 @@
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.3",
-    "@types/express": "^4.17.21"
+    "@types/express": "^4.17.21",
+    "@cloudflare/workers-types": "^5.20260812.1",
+    "wrangler": "^4.122.0"
   }
 }
