@@ -332,6 +332,102 @@ export const ScriptOptionsForm: React.FC<ScriptOptionsFormProps> = ({
           </button>
         </div>
 
+        {/* Series & Season Configuration Panel */}
+        {options.seriesMode && (
+          <div className="bg-[#11141b] border border-red-500/30 rounded-2xl p-4 space-y-4 animate-fadeIn">
+            <div className="flex items-center gap-2 border-b border-[#1e293b] pb-2 text-xs font-bold text-red-400">
+              <Film className="w-4 h-4 text-red-400" />
+              <span>הגדרות עונה וחלוקת פרקים קיימים בסדרה (Season Episodes Configuration)</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Season Number */}
+              <div>
+                <label className="text-xs font-bold text-slate-300 mb-1.5 block">
+                  מספר העונה (Season #):
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    max={50}
+                    value={options.seasonNumber || 1}
+                    onChange={(e) => onChangeOptions({ seasonNumber: parseInt(e.target.value) || 1 })}
+                    className="w-24 bg-[#0a0c10] border border-[#1e293b] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-red-500 font-mono font-bold"
+                  />
+                  <span className="text-xs text-slate-400">
+                    עונה {options.seasonNumber || 1}
+                  </span>
+                </div>
+              </div>
+
+              {/* Season Episodes Count */}
+              <div>
+                <label className="text-xs font-bold text-slate-300 mb-1.5 block">
+                  כמות הפרקים הקיימים בעונה (Total Season Episodes):
+                </label>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {[3, 4, 5, 6, 8, 10, 12].map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() =>
+                        onChangeOptions({
+                          seasonEpisodeCount: num,
+                          chapterCount: num,
+                          chapterControlMode: 'exact_count',
+                        })
+                      }
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition border ${
+                        (options.seasonEpisodeCount || options.chapterCount || 6) === num
+                          ? 'bg-red-600 text-white border-red-500 shadow-md shadow-red-900/30'
+                          : 'bg-[#0a0c10] text-slate-300 border-[#1e293b] hover:border-slate-600'
+                      }`}
+                    >
+                      {num} פרקים
+                    </button>
+                  ))}
+                  <input
+                    type="number"
+                    min={2}
+                    max={30}
+                    value={options.seasonEpisodeCount || options.chapterCount || 6}
+                    onChange={(e) => {
+                      const num = parseInt(e.target.value) || 6;
+                      onChangeOptions({
+                        seasonEpisodeCount: num,
+                        chapterCount: num,
+                        chapterControlMode: 'exact_count',
+                      });
+                    }}
+                    className="w-16 bg-[#0a0c10] border border-[#1e293b] rounded-xl px-2 py-1.5 text-xs text-center text-white focus:outline-none focus:border-red-500 font-mono font-bold"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  התסריט יבנה ויחלק את הטקסט בדיוק לפי {options.seasonEpisodeCount || options.chapterCount || 6} הפרקים הקיימים בעונה זו.
+                </p>
+              </div>
+            </div>
+
+            {/* Existing Episode Titles / Topics */}
+            <div>
+              <label className="text-xs font-bold text-slate-300 mb-1.5 block">
+                שמות/נושאי הפרקים הקיימים בעונה (אופציונלי):
+              </label>
+              <textarea
+                rows={2}
+                value={options.existingEpisodeTitles || ''}
+                onChange={(e) => onChangeOptions({ existingEpisodeTitles: e.target.value })}
+                placeholder="לדוגמה: פרק 1: היסודות והמבוא, פרק 2: הכלים המתקדמים, פרק 3: אסטרטגיית הצמיחה..."
+                className="w-full bg-[#0a0c10] border border-[#1e293b] rounded-xl p-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-red-500"
+              />
+              <p className="text-[10px] text-slate-400 mt-1">
+                מידע זה ינחה את ה-AI להתאים ולחבר את תסריט הפרקים בדיוק לשמות ולנושאי העונה הקיימים.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Tone selector */}
         <div>
           <label className="text-xs font-bold text-slate-300 mb-2 flex items-center gap-1.5">

@@ -26,6 +26,9 @@ export interface ScriptOptions {
   chapterCount?: number;
   chapterLengthRange?: ChapterLengthRange;
   seriesMode?: boolean;
+  seasonNumber?: number;
+  seasonEpisodeCount?: number;
+  existingEpisodeTitles?: string;
   customTargetWords?: number;
   customTargetMinutes?: number;
   deadline?: string;

@@ -279,7 +279,17 @@ ${v.transcript}
     }
 
     if (options.seriesMode) {
-      chapterInstruction += `\nהנחיית סדרה מרובת פרקים (Series/Playlist Mode): בנה את התסריט במבנה של סדרה/פלייליסט יוטיוב רב-פרקית! התייחס לכל פרק כ-Episode בסדרה בעל נושא מרכזי ייחודי, עם חיבור המשכיי בין הפרקים וטיזר לפרק הבא.`;
+      const seasonNum = options.seasonNumber || 1;
+      const epCount = options.seasonEpisodeCount || options.chapterCount || 6;
+      const epTitlesDesc = options.existingEpisodeTitles
+        ? `\nשמות/נושאי הפרקים הקיימים בעונה זו שחובה להיצמד אליהם: ${options.existingEpisodeTitles}`
+        : '';
+
+      chapterInstruction = `הנחיה קשיחה ומחייבת לסדרה/עונה (Season ${seasonNum}):
+החלוקה חייבת להתבצע בדיוק לפי ${epCount} הפרקים הקיימים בעונה ${seasonNum}!
+חובה ליצור בדיוק ${epCount} פרקים (Chapters/Episodes), כאשר כל פרק בתסריט מייצג פרק (Episode) בפועל בעונה זו.
+אל תמציא כמות פרקים שרירותית - היצמד במדויק ל-${epCount} הפרקים הקיימים בעונה!${epTitlesDesc}
+בנה את התסריט במבנה של עונה רב-פרקית עם חיבור המשכיי בין פרק לפרק וטיזר מותח לפרק הבא.`;
     }
 
     const systemInstruction = `אתה קריאייטיב דירקטור ויוצר תסריטי יוטיוב (YouTube Scriptwriter & Content Strategist) מהשורה הראשונה בעולם.

@@ -6,6 +6,7 @@ import { ScriptOutputView } from './components/ScriptOutputView';
 import { GeminiChatDrawer } from './components/GeminiChatDrawer';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { ModelNoticeModal } from './components/ModelNoticeModal';
+import { DeadlineNotificationManager } from './components/DeadlineNotificationManager';
 
 import { SourceVideo, ScriptOptions, GeneratedResult, ChatMessage } from './types';
 import { Sparkles, MessageSquare, AlertCircle, ArrowLeft, Youtube, FileText, CheckCircle2 } from 'lucide-react';
@@ -339,6 +340,9 @@ export default function App() {
         isOpen={isModelNoticeOpen}
         onClose={() => setIsModelNoticeOpen(false)}
       />
+
+      {/* Deadline Toast Notification Manager */}
+      <DeadlineNotificationManager result={result} />
 
     </div>
   );

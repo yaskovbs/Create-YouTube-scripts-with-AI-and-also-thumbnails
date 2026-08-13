@@ -415,44 +415,132 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
     URL.revokeObjectURL(url);
   };
 
+  // PDF Export Modal State
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [pdfHeaderTitle, setPdfHeaderTitle] = useState('');
+  const [pdfWatermarkText, setPdfWatermarkText] = useState('');
+
   // Print / PDF Export Functionality
-  const handlePrintPdf = () => {
+  const handlePrintPdf = (customTitle?: string, customWatermark?: string) => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
       alert('נחסם חלון קופץ. אנא אפשר חלונות קופצים בדפדפן כדי לייצא PDF.');
       return;
     }
 
+    const activeVersionObj = versions.find((v) => v.id === activeVersionId);
+    const finalHeaderTitle = customTitle || pdfHeaderTitle || result.mainTitle;
+    const finalWatermark = customWatermark || pdfWatermarkText || (activeVersionObj ? activeVersionObj.versionName : `גרסה ${versions.length + 1}`);
+
     const html = `
       <!DOCTYPE html>
       <html dir="rtl" lang="he">
       <head>
         <meta charset="utf-8">
-        <title>${result.mainTitle} - תסריט יוטיוב</title>
+        <title>${result.mainTitle} - תסריט יוטיוב PDF</title>
         <style>
-          body { font-family: system-ui, -apple-system, sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; }
-          h1 { color: #dc2626; border-bottom: 2px solid #dc2626; padding-bottom: 10px; font-size: 24px; }
-          h2 { color: #0284c7; margin-top: 25px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; font-size: 18px; }
-          h3 { color: #0f172a; margin-top: 20px; font-size: 15px; }
-          .stats-bar { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; }
-          .chapter-box { background: #f1f5f9; border-right: 4px solid #dc2626; padding: 15px; margin-bottom: 15px; border-radius: 6px; }
-          .visual-cue { background: #e0f2fe; color: #0369a1; padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-top: 8px; }
-          .timestamp { background: #1e293b; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-family: monospace; }
+          @page {
+            margin: 15mm;
+          }
+          body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 20px;
+            color: #0f172a;
+            line-height: 1.6;
+            position: relative;
+          }
+
+          /* Customizable Header */
+          .pdf-header {
+            border-bottom: 2.5px solid #dc2626;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+          }
+          .pdf-header-title {
+            font-size: 18px;
+            font-weight: 900;
+            color: #0f172a;
+          }
+          .pdf-header-subtitle {
+            font-size: 12px;
+            color: #dc2626;
+            font-weight: 700;
+            margin-top: 2px;
+          }
+          .pdf-header-meta {
+            font-size: 11px;
+            color: #64748b;
+            text-align: left;
+            font-family: monospace;
+          }
+
+          /* Script Version Watermark Overlay */
+          .pdf-watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 70px;
+            font-weight: 900;
+            color: rgba(220, 38, 38, 0.08);
+            pointer-events: none;
+            z-index: 99999;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            font-family: system-ui, sans-serif;
+            user-select: none;
+          }
+
+          h1 { color: #dc2626; font-size: 22px; margin-top: 10px; margin-bottom: 12px; font-weight: 900; }
+          h2 { color: #0284c7; margin-top: 22px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; font-size: 16px; font-weight: 800; }
+          h3 { color: #0f172a; margin-top: 14px; font-size: 14px; font-weight: 700; }
+          .stats-bar { background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 8px; font-size: 12px; margin-bottom: 20px; }
+          .chapter-box { background: #f8fafc; border-right: 4px solid #dc2626; border-top: 1px solid #e2e8f0; border-left: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; padding: 14px; margin-bottom: 14px; border-radius: 6px; page-break-inside: avoid; }
+          .visual-cue { background: #e0f2fe; color: #0369a1; padding: 6px 10px; border-radius: 6px; font-size: 11px; margin-top: 8px; font-weight: 600; }
+          .timestamp { background: #1e293b; color: #fff; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-family: monospace; }
+          
           @media print {
             body { padding: 0; }
             .no-print { display: none; }
+            .pdf-watermark {
+              position: fixed;
+              top: 45%;
+              left: 50%;
+              transform: translate(-50%, -50%) rotate(-30deg);
+            }
           }
         </style>
       </head>
       <body>
         <div class="no-print" style="margin-bottom: 20px; text-align: left;">
-          <button onclick="window.print()" style="background: #dc2626; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer;">הדפס / שמור כ-PDF</button>
+          <button onclick="window.print()" style="background: #dc2626; color: white; border: none; padding: 10px 22px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px;">הדפס / שמור כ-PDF</button>
         </div>
+
+        <!-- Watermark Displaying Script Version Number -->
+        <div class="pdf-watermark">${finalWatermark}</div>
+
+        <!-- Customizable Header with Project Title & Version -->
+        <div class="pdf-header">
+          <div>
+            <div class="pdf-header-title">${finalHeaderTitle}</div>
+            <div class="pdf-header-subtitle">תסריט יוטיוב מורשה - ${finalWatermark}</div>
+          </div>
+          <div class="pdf-header-meta">
+            נוצר ב: ${new Date(result.generatedAt).toLocaleDateString('he-IL')}<br>
+            אורך: כ-${totalWordCount} מילים (${estReadingTimeFormatted})
+          </div>
+        </div>
+
         <h1>${result.mainTitle}</h1>
         <div class="stats-bar">
           <strong>זמן הקראה משוער:</strong> ${estReadingTimeFormatted} | 
           <strong>סה"כ מילים:</strong> ${totalWordCount} מילים | 
-          <strong>מספר פרקים:</strong> ${result.chapters.length} פרקים
+          <strong>מספר פרקים:</strong> ${result.chapters.length} פרקים |
+          <strong>גרסה:</strong> ${finalWatermark}
         </div>
 
         <h2>Hook (10 שניות)</h2>
@@ -482,7 +570,7 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
         <p>${formattedAllSeoTagsString}</p>
 
         <h2>תיאור ל-YouTube</h2>
-        <pre style="background: #f8fafc; padding: 15px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; white-space: pre-wrap;">${
+        <pre style="background: #f8fafc; padding: 15px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 11px; white-space: pre-wrap;">${
           result.youtubeDescription
         }</pre>
 
@@ -582,9 +670,14 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
           </button>
 
           <button
-            onClick={handlePrintPdf}
+            onClick={() => {
+              const activeV = versions.find((v) => v.id === activeVersionId);
+              setPdfHeaderTitle(result.mainTitle);
+              setPdfWatermarkText(activeV ? activeV.versionName : 'גרסה 1');
+              setIsPdfModalOpen(true);
+            }}
             className="px-3 py-2 text-xs font-semibold text-slate-200 bg-[#1e293b] hover:bg-[#334155] border border-[#334155] rounded-xl transition flex items-center gap-1.5"
-            title="ייצא / הדפס קובץ PDF מעוצב"
+            title="ייצא / הדפס קובץ PDF מעוצב עם כותרת מותאמת וסימן מים"
           >
             <Printer className="w-3.5 h-3.5 text-rose-400" />
             <span>PDF</span>
@@ -1308,6 +1401,89 @@ export const ScriptOutputView: React.FC<ScriptOutputViewProps> = ({
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* PDF Export Modal */}
+        {isPdfModalOpen && (
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[999] flex items-center justify-center p-4 animate-fadeIn">
+            <div className="bg-[#11141b] border border-[#1e293b] rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 text-right dir-rtl relative">
+              <div className="flex items-center justify-between border-b border-[#1e293b] pb-3">
+                <div className="flex items-center gap-2">
+                  <Printer className="w-5 h-5 text-rose-500" />
+                  <h3 className="text-base font-bold text-white">הגדרות ייצא PDF מותאם אישית</h3>
+                </div>
+                <button
+                  onClick={() => setIsPdfModalOpen(false)}
+                  className="text-slate-400 hover:text-white p-1 rounded-lg transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* Header Title Field */}
+                <div>
+                  <label className="text-xs font-bold text-slate-300 mb-1.5 block">
+                    כותרת הפרויקט בראש העמוד (Header Title):
+                  </label>
+                  <input
+                    type="text"
+                    value={pdfHeaderTitle}
+                    onChange={(e) => setPdfHeaderTitle(e.target.value)}
+                    placeholder="הזן כותרת מותאמת אישית לראש העמוד..."
+                    className="w-full bg-[#0a0c10] border border-[#1e293b] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-rose-500"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    כותרת זו תוצג בראש כל עמוד במסמך ה-PDF המעוצב.
+                  </p>
+                </div>
+
+                {/* Watermark Script Version Field */}
+                <div>
+                  <label className="text-xs font-bold text-slate-300 mb-1.5 block">
+                    מספר/שם גרסת התסריט לסימן המים (Version Watermark):
+                  </label>
+                  <input
+                    type="text"
+                    value={pdfWatermarkText}
+                    onChange={(e) => setPdfWatermarkText(e.target.value)}
+                    placeholder="לדוגמה: גרסה 1, DRAFT v2, מהדורה סופית..."
+                    className="w-full bg-[#0a0c10] border border-[#1e293b] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-rose-500 font-mono"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    טקסט זה יוצג כסימן מים באלכסון ברקע כל עמודי ה-PDF, וכן בכותרת העליונה.
+                  </p>
+                </div>
+
+                <div className="bg-[#0a0c10] p-3 rounded-xl border border-[#1e293b] text-xs text-slate-300 space-y-1">
+                  <div className="font-bold text-amber-400">💡 דגשי ייצא ל-PDF:</div>
+                  <p className="text-[11px] text-slate-400">
+                    הקובץ כולל עיצוב דפוס מותאם, חלוקת פרקים נקיים, טיים-סטאמפס, תגיות SEO ותיאור מוכן ליוטיוב.
+                  </p>
+                </div>
+              </div>
+
+              {/* Modal Action Buttons */}
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-[#1e293b]">
+                <button
+                  onClick={() => setIsPdfModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition"
+                >
+                  ביטול
+                </button>
+                <button
+                  onClick={() => {
+                    handlePrintPdf(pdfHeaderTitle, pdfWatermarkText);
+                    setIsPdfModalOpen(false);
+                  }}
+                  className="px-5 py-2.5 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-900/30 transition flex items-center gap-1.5"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>הדפס / ייצא ל-PDF כעת</span>
+                </button>
+              </div>
             </div>
           </div>
         )}
